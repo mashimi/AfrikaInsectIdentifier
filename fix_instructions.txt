@@ -1,0 +1,110 @@
+1. Package Dependencies Update
+- Update React and React DOM to stable versions (18.2.0)
+- Update Next.js to latest stable version (14.1.0)
+- Expected behavior: Stable application performance with supported versions
+- Files to modify: package.json
+
+2. Header Component Enhancement
+- Add proper href to logo link (href="/")
+- Uncomment and implement navigation menu
+- Add aria-label to logo link for accessibility
+- Expected behavior: Fully functional navigation with proper accessibility
+- Files to modify: components/header.tsx
+
+3. MainContainer Component Improvements
+- Add proper error handling for missing API key
+- Implement proper cleanup for camera stream
+- Improve PDF generation with proper markdown formatting
+- Add loading states and error messages for better UX
+- Expected behavior: More robust error handling and improved user experience
+- Files to modify: components/main-container.tsx
+
+4. Layout Optimization
+- Add proper meta tags for SEO
+- Add viewport meta tag
+- Add proper error boundary
+- Expected behavior: Better SEO and error handling
+- Files to modify: app/layout.tsx
+
+Specific Code Changes:
+
+For package.json:
+```json
+{
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "next": "^14.1.0"
+    // other dependencies remain unchanged
+  }
+}
+```
+
+For header.tsx:
+```tsx
+<div className="flex items-center">
+  <Image
+    src={"/image-logo.png"}
+    alt="Image Identifier logo"
+    width={40}
+    height={40}
+    className="mr-3"
+  />
+  <a href="/" aria-label="Home">
+    <h1 className="text-2xl font-bold text-green-600">Insect Identifier</h1>
+  </a>
+</div>
+<nav>
+  <ul className="flex space-x-4">
+    <Link href="/" className="text-green-600 hover:text-green-800 transition duration-150 ease-in-out">Home</Link>
+    <Link href="/#how-it-works" className="text-green-600 hover:text-green-800 transition duration-150 ease-in-out">How it Works</Link>
+    <Link href="/#features" className="text-green-600 hover:text-green-800 transition duration-150 ease-in-out">Features</Link>
+  </ul>
+</nav>
+```
+
+For main-container.tsx:
+```tsx
+// Add at the beginning of analyzeImage function
+if (!process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY) {
+  console.error("Missing API key");
+  setLoading(false);
+  return;
+}
+
+// Improve camera cleanup
+useEffect(() => {
+  return () => {
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+    }
+  };
+}, []);
+
+// Improve PDF generation
+const downloadPDF = () => {
+  if (!result) return;
+  const doc = new jsPDF();
+  const parsedContent = marked(result);
+  const div = document.createElement('div');
+  div.innerHTML = parsedContent;
+  const text = div.textContent || div.innerText || "";
+  const lines = doc.splitTextToSize(text, 180);
+  doc.text(lines, 10, 10);
+  doc.save("insect-analysis.pdf");
+};
+```
+
+For layout.tsx:
+```tsx
+export const metadata: Metadata = {
+  title: "Insect Identifier",
+  description: "Identify your Insect from an image using AI technology.",
+  viewport: "width=device-width, initial-scale=1",
+  openGraph: {
+    title: "Insect Identifier",
+    description: "Identify your Insect from an image using AI technology.",
+    type: "website"
+  }
+};
